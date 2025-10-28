@@ -1,0 +1,137 @@
+-- ================================================ 
+-- Atividade 08 - Comandos SQL - BomGosto Cafeteria (Versão PostgreSQL)
+-- ================================================
+
+-- Em PostgreSQL, a criação do banco de dados geralmente é feita fora do script.
+-- Você pode criar o banco via pgAdmin ou com o comando:
+-- CREATE DATABASE bomgosto;
+
+-- O comando USE não é utilizado. Você se conecta diretamente ao banco de dados 
+-- (por exemplo, usando \c bomgosto no psql) antes de rodar o resto do script.
+
+-- 1) Criar as tabelas (esta parte funciona perfeitamente)
+
+-- Tabela Comanda
+CREATE TABLE IF NOT EXISTS Comanda (
+    id_comanda INT PRIMARY KEY,
+    data DATE NOT NULL,
+    numero_mesa INT NOT NULL,
+    nome_cliente VARCHAR(100) NOT NULL
+);
+
+-- Tabela Cardapio
+CREATE TABLE IF NOT EXISTS Cardapio (
+    id_cardapio INT PRIMARY KEY,
+    nome_item VARCHAR(100) UNIQUE NOT NULL,
+    descricao VARCHAR(255),
+    preco_unitario DECIMAL(10,2) NOT NULL
+);
+
+-- Tabela Item_Comanda
+CREATE TABLE IF NOT EXISTS Item_Comanda (
+    id_comanda INT NOT NULL,
+    id_cardapio INT NOT NULL,
+    quantidade INT NOT NULL,
+    PRIMARY KEY(id_comanda, id_cardapio),
+    FOREIGN KEY(id_comanda) REFERENCES Comanda(id_comanda),
+    FOREIGN KEY(id_cardapio) REFERENCES Cardapio(id_cardapio)
+);
+
+-- 2) Populando as tabelas (com o pedido do Michelangelo atualizado para Pizza)
+
+-- Comandas com personagens
+INSERT INTO Comanda (id_comanda, data, numero_mesa, nome_cliente)
+VALUES
+(10, '2025-10-04', 1, 'Michelangelo(Tartarugas Ninja)'),
+(20, '2025-10-04', 1, 'Tony Sterko'),
+(30, '2025-10-04', 2, 'Obi-Wan Kenobi'),
+(40, '2025-10-04', 3, 'Peter Parker'),
+(50, '2025-10-04', 3, 'John Connor');
+
+-- Cardapio
+INSERT INTO Cardapio (id_cardapio, nome_item, descricao, preco_unitario)
+VALUES
+(1, 'Torrada', 'Presunto e queijo', 12.00),
+(2, 'Coxinha', 'Frango', 10.00),
+(3, 'Café Preto', 'Médio', 7.00),
+(4, 'Café Com Leite', 'Com espuma', 10.00),
+(5, 'Pão de Queijo', 'Muito queijo', 5.00),
+(6, 'Bolo', 'Chocolate', 10.00),
+(7, 'Cookie', 'Gotas de chocolate', 2.00),
+(8, 'Pizza', 'Pepperoni', 9.00),
+(9, 'Brigadeiro', 'Meio Amargo', 4.00),
+(10, 'Chocolate Quente', 'Com Avelâ', 8.00);
+
+-- Itens da Comanda (com a mudança do Michelangelo)
+INSERT INTO Item_Comanda (id_comanda, id_cardapio, quantidade)
+VALUES
+(10, 8, 1), -- Michelangelo agora pede Pizza
+(20, 2, 1),
+(20, 5, 2),
+(30, 4, 3),
+(30, 7, 4),
+(40, 6, 1),
+(50, 8, 2);
+
+-- ================================================ 
+-- 3) Exercícios SQL (as queries estão corretas para PostgreSQL)
+-- ================================================
+
+-- Questão 1: Listagem do cardápio ordenada por nome
+SELECT * 
+FROM Cardapio
+ORDER BY nome_item ASC;
+
+-- Questão 2: Comandas com itens detalhados e preço total por item
+SELECT 
+    c.id_comanda,
+    TO_CHAR(c.data, 'DD/MM/YYYY') AS data,
+    c.numero_mesa,
+    c.nome_cliente,
+    i.id_cardapio,
+    ca.nome_item,
+    ca.descricao,
+    i.quantidade,
+    ca.preco_unitario,
+    (i.quantidade * ca.preco_unitario) AS preco_total
+FROM Comanda c
+JOIN Item_Comanda i ON c.id_comanda = i.id_comanda
+JOIN Cardapio ca ON i.id_cardapio = ca.id_cardapio
+ORDER BY c.data, c.id_comanda, ca.nome_item;
+
+-- Questão 3: Valor total da comanda
+SELECT 
+    c.id_comanda,
+    TO_CHAR(c.data, 'DD/MM/YYYY') AS data,
+    c.numero_mesa,
+    c.nome_cliente,
+    SUM(i.quantidade * ca.preco_unitario) AS total_comanda
+FROM Comanda c
+JOIN Item_Comanda i ON c.id_comanda = i.id_comanda
+JOIN Cardapio ca ON i.id_cardapio = ca.id_cardapio
+GROUP BY c.id_comanda, c.data, c.numero_mesa, c.nome_cliente
+ORDER BY c.data;
+
+-- Questão 4: Comandas com mais de um tipo de item
+SELECT 
+    c.id_comanda,
+    TO_CHAR(c.data, 'DD/MM/YYYY') AS data,
+    c.numero_mesa,
+    c.nome_cliente,
+    SUM(i.quantidade * ca.preco_unitario) AS total_comanda
+FROM Comanda c
+JOIN Item_Comanda i ON c.id_comanda = i.id_comanda
+JOIN Cardapio ca ON i.id_cardapio = ca.id_cardapio
+GROUP BY c.id_comanda, c.data, c.numero_mesa, c.nome_cliente
+HAVING COUNT(DISTINCT i.id_cardapio) > 1
+ORDER BY c.data;
+
+-- Questão 5: Total de faturamento por data
+SELECT 
+    TO_CHAR(c.data, 'DD/MM/YYYY') AS data,
+    SUM(i.quantidade * ca.preco_unitario) AS total_faturamento
+FROM Comanda c
+JOIN Item_Comanda i ON c.id_comanda = i.id_comanda
+JOIN Cardapio ca ON i.id_cardapio = ca.id_cardapio
+GROUP BY c.data
+ORDER BY c.data;
