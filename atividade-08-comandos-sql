@@ -1,15 +1,10 @@
 -- ================================================ 
--- Atividade 08 - Comandos SQL - BomGosto Cafeteria (Versão PostgreSQL)
+-- Atividade 08 - Comandos SQL - BomGosto Cafeteria 
+--              (Versão PostgreSQL)
 -- ================================================
 
--- Em PostgreSQL, a criação do banco de dados geralmente é feita fora do script.
--- Você pode criar o banco via pgAdmin ou com o comando:
--- CREATE DATABASE bomgosto;
 
--- O comando USE não é utilizado. Você se conecta diretamente ao banco de dados 
--- (por exemplo, usando \c bomgosto no psql) antes de rodar o resto do script.
-
--- 1) Criar as tabelas (esta parte funciona perfeitamente)
+-- 1) Criar as tabelas
 
 -- Tabela Comanda
 CREATE TABLE IF NOT EXISTS Comanda (
@@ -37,7 +32,7 @@ CREATE TABLE IF NOT EXISTS Item_Comanda (
     FOREIGN KEY(id_cardapio) REFERENCES Cardapio(id_cardapio)
 );
 
--- 2) Populando as tabelas (com o pedido do Michelangelo atualizado para Pizza)
+-- 2) Populando as tabelas
 
 -- Comandas com personagens
 INSERT INTO Comanda (id_comanda, data, numero_mesa, nome_cliente)
@@ -62,10 +57,10 @@ VALUES
 (9, 'Brigadeiro', 'Meio Amargo', 4.00),
 (10, 'Chocolate Quente', 'Com Avelâ', 8.00);
 
--- Itens da Comanda (com a mudança do Michelangelo)
+-- Itens da Comanda
 INSERT INTO Item_Comanda (id_comanda, id_cardapio, quantidade)
 VALUES
-(10, 8, 1), -- Michelangelo agora pede Pizza
+(10, 8, 1), 
 (20, 2, 1),
 (20, 5, 2),
 (30, 4, 3),
@@ -74,7 +69,7 @@ VALUES
 (50, 8, 2);
 
 -- ================================================ 
--- 3) Exercícios SQL (as queries estão corretas para PostgreSQL)
+-- 3)           Exercícios SQL
 -- ================================================
 
 -- Questão 1: Listagem do cardápio ordenada por nome
